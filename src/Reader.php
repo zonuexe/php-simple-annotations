@@ -10,15 +10,14 @@ class Reader
     /** @var string */
     private $rawDocBlock;
 
-    /** @var mixed[] */
+    /** @var array */
     private $parameters = [];
 
-    /** @var boolean */
+    /** @var bool */
     private $parsedAll = false;
 
     /**
      * @param string $doc_block
-     * @throws \Exception
      */
     public function __construct($doc_block)
     {
@@ -27,14 +26,14 @@ class Reader
 
     /**
      * Reset the doc block content so the object is reusable
-     * 
+     *
      * @param string $doc_block
-     * @return void
      */
-    public function setDocBlockContent($doc_block){
+    public function setDocBlockContent($doc_block)
+    {
         $this->parameters = [];
         $this->parsedAll = false;
-        
+
         $this->rawDocBlock = $doc_block;
     }
 
@@ -42,14 +41,13 @@ class Reader
      * @param  \Reflector|string $class_or_reflector
      * @param  string $method
      * @return Reader
-     * @throws \Exception
      */
     public static function read($class_or_reflector, $method = null)
     {
         // get reflection from class or class/method
         // (depends on constructor arguments)
         if (empty($class_or_reflector)) {
-            throw new \Exception('No zero argument constructor allowed');
+            throw new \DomainException('No zero argument constructor allowed');
         }
 
         if ($method === null) {
@@ -65,6 +63,10 @@ class Reader
         return new Reader($reflection->getDocComment());
     }
 
+    /**
+     * @param  string $key
+     * @return mixed
+     */
     public function parseSingle($key)
     {
         if (isset($this->parameters[$key])) {
@@ -87,7 +89,7 @@ class Reader
         }
 
         // found many, save as array
-        $this->parameters[$key] = array();
+        $this->parameters[$key] = [];
         foreach ($matches[1] as $elem) {
             $this->parameters[$key][] = $this->parseValue($elem);
         }
@@ -116,6 +118,9 @@ class Reader
         }
     }
 
+    /**
+     * @param string $name
+     */
     public function getVariableDeclarations($name)
     {
         $declarations = (array)$this->getParameter($name);
@@ -147,14 +152,18 @@ class Reader
         }
 
         // take first two as type and name
-        $declaration = array(
+        $declaration = [
             'type' => $declaration[0],
             'name' => $declaration[1],
-        );
+        ];
 
         return $declaration;
     }
 
+    /**
+     * @param  string $originalValue
+     * @return mixed
+     */
     public function parseValue($originalValue)
     {
         if($originalValue && $originalValue !== 'null') {
@@ -168,6 +177,9 @@ class Reader
         return $value;
     }
 
+    /**
+     * @return array
+     */
     public function getParameters()
     {
         if (!$this->parsedAll) {
@@ -178,6 +190,9 @@ class Reader
         return $this->parameters;
     }
 
+    /**
+     * @param string $key
+     */
     public function getParameter($key)
     {
         return $this->parseSingle($key);
