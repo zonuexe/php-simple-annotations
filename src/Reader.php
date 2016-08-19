@@ -38,7 +38,7 @@ class Reader
     }
 
     /**
-     * @param  \Reflector|string $class_or_reflector
+     * @param  \Reflector|string|object $class_or_reflector
      * @param  string $method
      * @return Reader
      */
